@@ -20,32 +20,48 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   final List<OnboardingData> onboardingData = [
     OnboardingData(
-      title: "3D Ride Experience",
+      title: "Wonderful Ride Experience",
       description:
           "Book your ride with stunning 3D visuals and immersive animations that bring your journey to life.",
       icon: Icons.threed_rotation,
-      floatingElements: ["🚗", "📍", "✨"],
+      floatingElements: [
+        Icons.directions_car_outlined,
+        Icons.location_on_outlined,
+        Icons.auto_awesome_outlined,
+      ],
     ),
     OnboardingData(
       title: "Smart Navigation",
       description:
           "Experience intelligent route planning with 3D maps and real-time traffic updates for optimal travel.",
       icon: Icons.navigation,
-      floatingElements: ["🗺️", "🧭", "⚡"],
+      floatingElements: [
+        Icons.map_outlined,
+        Icons.explore_outlined,
+        Icons.flash_on_outlined,
+      ],
     ),
     OnboardingData(
       title: "Premium Comfort",
       description:
           "Choose from our premium fleet with 3D vehicle preview and luxury comfort for every journey.",
       icon: Icons.car_rental,
-      floatingElements: ["🏆", "💎", "🌟"],
+      floatingElements: [
+        Icons.workspace_premium_outlined,
+        Icons.diamond_outlined,
+        Icons.star_outline,
+      ],
     ),
     OnboardingData(
       title: "Safe & Secure",
       description:
           "Your safety is our priority with real-time tracking, emergency features, and verified drivers.",
       icon: Icons.security,
-      floatingElements: ["🛡️", "🔒", "✅"],
+      floatingElements: [
+        Icons.shield_outlined,
+        Icons.lock_outline,
+        Icons.verified_outlined,
+      ],
     ),
   ];
 
@@ -53,12 +69,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   void initState() {
     super.initState();
     _parallaxController = AnimationController(
-      duration: const Duration(seconds: 10),
+      duration: const Duration(seconds: 6), // Faster animation
       vsync: this,
     )..repeat();
 
     _floatingController = AnimationController(
-      duration: const Duration(seconds: 4),
+      duration: const Duration(seconds: 2), // Much faster floating
       vsync: this,
     )..repeat();
   }
@@ -134,31 +150,105 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     return AnimatedBuilder(
       animation: _parallaxController,
       builder: (context, child) {
+        final screenWidth = MediaQuery.of(context).size.width;
+        final screenHeight = MediaQuery.of(context).size.height;
+
         return Stack(
           children: [
-            // Moving geometric shapes
-            ...List.generate(15, (index) {
-              final double offset =
-                  (_parallaxController.value * 360) + (index * 24);
-              return Positioned(
-                left: (index * 50) % MediaQuery.of(context).size.width,
-                top: (offset % MediaQuery.of(context).size.height) - 50,
-                child: Transform.rotate(
-                  angle: offset * 0.01,
-                  child: Container(
-                    width: 20 + (index % 4) * 5,
-                    height: 20 + (index % 4) * 5,
-                    decoration: BoxDecoration(
-                      shape: index % 2 == 0
-                          ? BoxShape.circle
-                          : BoxShape.rectangle,
-                      color: AppTheme.primaryOrange.withOpacity(
-                        0.1 + (index % 3) * 0.1,
+            // Gradient Wave Background
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppTheme.primaryOrange.withOpacity(
+                        0.02 + 0.01 * _parallaxController.value,
                       ),
-                      borderRadius: index % 2 == 1
-                          ? BorderRadius.circular(8)
-                          : null,
+                      Colors.transparent,
+                      AppTheme.primaryOrange.withOpacity(
+                        0.03 + 0.02 * (1 - _parallaxController.value),
+                      ),
+                    ],
+                    stops: [0.0, 0.5, 1.0],
+                  ),
+                ),
+              ),
+            ),
+
+            // Rising Bubbles
+            ...List.generate(10, (index) {
+              final double startDelay = (index * 0.1) % 1.0;
+              final double adjustedProgress =
+                  (_parallaxController.value + startDelay) % 1.0;
+
+              // Linear vertical movement from bottom to top
+              final double bubbleY =
+                  screenHeight + 50 - (adjustedProgress * (screenHeight + 100));
+              final double bubbleX =
+                  (index * (screenWidth / 10)) +
+                  (20 * adjustedProgress * (index.isEven ? 1 : -1));
+
+              return Positioned(
+                left: bubbleX % screenWidth,
+                top: bubbleY,
+                child: Container(
+                  width: 8 + (index % 4) * 4,
+                  height: 8 + (index % 4) * 4,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppTheme.primaryOrange.withOpacity(
+                      0.15 +
+                          (0.1 *
+                              (1 - adjustedProgress)), // Fade out as it rises
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primaryOrange.withOpacity(0.1),
+                        blurRadius: 8,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+
+            // Horizontal Drifting Particles
+            ...List.generate(6, (index) {
+              final double startDelay = (index * 0.15) % 1.0;
+              final double adjustedProgress =
+                  (_parallaxController.value + startDelay) % 1.0;
+
+              // Linear horizontal movement from left to right
+              final double particleX =
+                  -30 + (adjustedProgress * (screenWidth + 60));
+              final double particleY =
+                  (index * (screenHeight / 6)) +
+                  (10 * adjustedProgress * (index.isEven ? 1 : -1));
+
+              return Positioned(
+                left: particleX,
+                top: particleY % screenHeight,
+                child: Container(
+                  width: 6 + (index % 3) * 3,
+                  height: 6 + (index % 3) * 3,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(2),
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.primaryOrange.withOpacity(0.2),
+                        AppTheme.primaryOrange.withOpacity(0.05),
+                      ],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primaryOrange.withOpacity(0.08),
+                        blurRadius: 6,
+                        spreadRadius: 1,
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -216,15 +306,46 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                       50 +
                                       (entry.key * 80) +
                                       (15 * sin(animationOffset)),
-                                  top: 20 + (10 * cos(animationOffset)),
+                                  top: 20 + (12 * cos(animationOffset)),
                                   child: Transform(
                                     alignment: Alignment.center,
                                     transform: Matrix4.identity()
                                       ..setEntry(3, 2, 0.001)
-                                      ..rotateZ(animationOffset * 0.5),
-                                    child: Text(
-                                      entry.value,
-                                      style: const TextStyle(fontSize: 32),
+                                      ..rotateZ(animationOffset * 0.3)
+                                      ..scale(
+                                        1.0 + (0.2 * sin(animationOffset * 2)),
+                                      ),
+                                    child: Container(
+                                      width: 48,
+                                      height: 48,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            AppTheme.primaryOrange.withOpacity(
+                                              0.8,
+                                            ),
+                                            AppTheme.primaryOrange.withOpacity(
+                                              0.4,
+                                            ),
+                                          ],
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppTheme.primaryOrange
+                                                .withOpacity(0.3),
+                                            blurRadius: 12,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Icon(
+                                        entry.value,
+                                        color: AppTheme.primaryWhite,
+                                        size: 24,
+                                      ),
                                     ),
                                   ),
                                 );
@@ -378,7 +499,7 @@ class OnboardingData {
   final String title;
   final String description;
   final IconData icon;
-  final List<String> floatingElements;
+  final List<IconData> floatingElements;
 
   OnboardingData({
     required this.title,

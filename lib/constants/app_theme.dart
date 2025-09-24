@@ -102,11 +102,13 @@ class AppTheme {
     BoxShadow(color: Color(0x1A000000), blurRadius: 5, offset: Offset(0, 2)),
   ];
 
-  // Animation Durations
-  static const Duration quickAnimation = Duration(milliseconds: 200);
-  static const Duration mediumAnimation = Duration(milliseconds: 400);
-  static const Duration longAnimation = Duration(milliseconds: 800);
-  static const Duration splashDuration = Duration(milliseconds: 3000);
+  // Animation Durations (optimized for faster performance)
+  static const Duration quickAnimation = Duration(milliseconds: 150);
+  static const Duration mediumAnimation = Duration(milliseconds: 300);
+  static const Duration longAnimation = Duration(milliseconds: 600);
+  static const Duration splashDuration = Duration(
+    milliseconds: 1000,
+  ); // Much faster!
 
   // Border Radius
   static const BorderRadius cardRadius = BorderRadius.all(Radius.circular(16));
