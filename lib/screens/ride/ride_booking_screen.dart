@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../constants/app_theme.dart';
+import 'rider_matching_screen.dart';
 
 class RideBookingScreen extends StatefulWidget {
   const RideBookingScreen({super.key});
@@ -14,6 +15,10 @@ class _RideBookingScreenState extends State<RideBookingScreen>
   late AnimationController _floatingButtonController;
   final TextEditingController _pickupController = TextEditingController();
   final TextEditingController _destinationController = TextEditingController();
+  bool _isSearchingRiders = false;
+  bool _hasSelectedDestination = false;
+  List<Map<String, dynamic>> _availableRiders = [];
+  int _selectedRiderIndex = 0;
 
   @override
   void initState() {
@@ -30,6 +35,92 @@ class _RideBookingScreenState extends State<RideBookingScreen>
     _pickupController.dispose();
     _destinationController.dispose();
     super.dispose();
+  }
+
+  // Fetch current location
+  void _fetchCurrentLocation() {
+    setState(() {
+      _pickupController.text = "Fetching current location...";
+    });
+
+    // Simulate location fetching
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() {
+        _pickupController.text = "123 Main Street, City Center, Your City";
+      });
+    });
+  }
+
+  // Search for available riders
+  void _searchAvailableRiders() {
+    if (_destinationController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your destination'),
+          backgroundColor: AppTheme.primaryOrange,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSearchingRiders = true;
+      _hasSelectedDestination = true;
+    });
+
+    // Simulate searching for riders
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() {
+        _isSearchingRiders = false;
+        _availableRiders = [
+          {
+            'vehicleType': '🏍️ RideyaBike',
+            'subtitle': 'Motorbike • Quick & Easy',
+            'icon': Icons.two_wheeler,
+            'estimatedTime': '2 min',
+            'price': 50,
+            'distance': '1.8 km',
+            'capacity': '1 person',
+          },
+          {
+            'vehicleType': '🛺 RideyaAuto',
+            'subtitle': 'Three Wheeler • Affordable rides',
+            'icon': Icons.electric_rickshaw,
+            'estimatedTime': '3 min',
+            'price': 80,
+            'distance': '2.1 km',
+            'capacity': '3 persons',
+          },
+          {
+            'vehicleType': '🚗 RideyaCar',
+            'subtitle': 'Car • Comfortable rides',
+            'icon': Icons.directions_car,
+            'estimatedTime': '4 min',
+            'price': 120,
+            'distance': '2.5 km',
+            'capacity': '4 persons',
+          },
+          {
+            'vehicleType': '🚐 RideyaVan',
+            'subtitle': 'Van • Group travels',
+            'icon': Icons.airport_shuttle,
+            'estimatedTime': '5 min',
+            'price': 150,
+            'distance': '2.8 km',
+            'capacity': '7 persons',
+          },
+          {
+            'vehicleType': '🚌 RideyaXL',
+            'subtitle': 'XL Van • Large groups',
+            'icon': Icons.rv_hookup,
+            'estimatedTime': '7 min',
+            'price': 200,
+            'distance': '3.2 km',
+            'capacity': '12 persons',
+          },
+        ];
+      });
+    });
   }
 
   @override
@@ -151,9 +242,7 @@ class _RideBookingScreenState extends State<RideBookingScreen>
       top: MediaQuery.of(context).size.height * 0.35,
       child: Column(
         children: [
-          _buildFloatingButton(Icons.my_location, () {
-            // Location button action placeholder
-          }),
+          _buildFloatingButton(Icons.my_location, _fetchCurrentLocation),
           const SizedBox(height: 12),
           _buildFloatingButton(Icons.layers, () {
             // Toggle map type or show layer options
@@ -234,6 +323,7 @@ class _RideBookingScreenState extends State<RideBookingScreen>
                         iconColor: AppTheme.primaryOrange,
                         hintText: 'Pickup location',
                         controller: _pickupController,
+                        showFetchButton: true,
                       ),
 
                       const SizedBox(height: 16),
@@ -244,6 +334,7 @@ class _RideBookingScreenState extends State<RideBookingScreen>
                         iconColor: Colors.red,
                         hintText: 'Where to?',
                         controller: _destinationController,
+                        showFetchButton: false,
                       ),
                     ],
                   ),
@@ -251,83 +342,145 @@ class _RideBookingScreenState extends State<RideBookingScreen>
 
                 const SizedBox(height: 24),
 
-                // Ride options
+                // Search Riders or Available Riders
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Choose a ride',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.primaryBlack,
+                      if (!_hasSelectedDestination) ...[
+                        const Text(
+                          'Enter destination to search riders',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.primaryBlack,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildRideOption(
-                        title: 'RidyaGo',
-                        subtitle: 'Affordable, everyday rides',
-                        price: '₹120',
-                        time: '2 min',
-                        icon: Icons.directions_car,
-                        isSelected: true,
-                      ),
-                      const SizedBox(height: 12),
-                      _buildRideOption(
-                        title: 'RidyaXL',
-                        subtitle: '6 seats',
-                        price: '₹150',
-                        time: '3 min',
-                        icon: Icons.airport_shuttle,
-                        isSelected: false,
-                      ),
+                        const SizedBox(height: 16),
+                        Container(
+                          width: double.infinity,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            gradient: AppTheme.primaryGradient,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: ElevatedButton(
+                            onPressed: _searchAvailableRiders,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Search Available Riders',
+                              style: TextStyle(
+                                color: AppTheme.primaryWhite,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ] else if (_isSearchingRiders) ...[
+                        const Center(
+                          child: Column(
+                            children: [
+                              CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppTheme.primaryOrange,
+                                ),
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'Searching for available riders...',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: AppTheme.primaryBlack,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ] else if (_availableRiders.isNotEmpty) ...[
+                        const Text(
+                          'Choose Your Ride',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.primaryBlack,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          height: 200,
+                          child: ListView.builder(
+                            itemCount: _availableRiders.length,
+                            itemBuilder: (context, index) {
+                              final rider = _availableRiders[index];
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedRiderIndex = index;
+                                  });
+                                },
+                                child: _buildRiderCard(
+                                  rider,
+                                  index == _selectedRiderIndex,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
 
                 const SizedBox(height: 24),
 
-                // Book ride button
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Container(
-                    width: double.infinity,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.primaryGradient,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.primaryOrange.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Handle ride booking
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                // Confirm booking button (only show when riders are available)
+                if (_availableRiders.isNotEmpty && !_isSearchingRiders)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Container(
+                      width: double.infinity,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        gradient: AppTheme.primaryGradient,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.primaryOrange.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      child: const Text(
-                        'Book Ride',
-                        style: TextStyle(
-                          color: AppTheme.primaryWhite,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          _confirmBooking();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Confirm Booking',
+                          style: TextStyle(
+                            color: AppTheme.primaryWhite,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
 
                 const SizedBox(height: 32),
               ],
@@ -346,6 +499,7 @@ class _RideBookingScreenState extends State<RideBookingScreen>
     required Color iconColor,
     required String hintText,
     required TextEditingController controller,
+    required bool showFetchButton,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -383,20 +537,51 @@ class _RideBookingScreenState extends State<RideBookingScreen>
               ),
             ),
           ),
+          if (showFetchButton)
+            Container(
+              margin: const EdgeInsets.only(left: 8),
+              child: TextButton(
+                onPressed: _fetchCurrentLocation,
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  backgroundColor: AppTheme.primaryOrange.withOpacity(0.1),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'Fetch Location',
+                  style: TextStyle(
+                    color: AppTheme.primaryOrange,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildRideOption({
-    required String title,
-    required String subtitle,
-    required String price,
-    required String time,
-    required IconData icon,
-    required bool isSelected,
-  }) {
+  // Build rider card widget
+  Widget _buildRiderCard(Map<String, dynamic> rider, bool isSelected) {
+    // Extract values with proper null checks and defaults
+    final String vehicleType =
+        rider['vehicleType'] as String? ?? 'Unknown Vehicle';
+    final String subtitle =
+        rider['subtitle'] as String? ?? 'Vehicle Description';
+    final IconData icon = rider['icon'] as IconData? ?? Icons.directions_car;
+    final String capacity = rider['capacity'] as String? ?? '1 person';
+    final String distance = rider['distance'] as String? ?? '0 km';
+    final int price = rider['price'] as int? ?? 0;
+    final String estimatedTime = rider['estimatedTime'] as String? ?? '0 min';
+
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isSelected
@@ -410,14 +595,15 @@ class _RideBookingScreenState extends State<RideBookingScreen>
       ),
       child: Row(
         children: [
+          // Vehicle icon
           Container(
-            width: 40,
-            height: 40,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
               color: AppTheme.primaryOrange.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(25),
             ),
-            child: Icon(icon, color: AppTheme.primaryOrange, size: 24),
+            child: Icon(icon, color: AppTheme.primaryOrange, size: 30),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -425,7 +611,7 @@ class _RideBookingScreenState extends State<RideBookingScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  vehicleType,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -436,6 +622,16 @@ class _RideBookingScreenState extends State<RideBookingScreen>
                   subtitle,
                   style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
+                Row(
+                  children: [
+                    Icon(Icons.people, size: 14, color: Colors.grey[600]),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$capacity • $distance away',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -443,20 +639,225 @@ class _RideBookingScreenState extends State<RideBookingScreen>
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                price,
+                '₹$price',
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.primaryBlack,
+                  color: AppTheme.primaryOrange,
                 ),
               ),
-              Text(
-                time,
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryOrange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'ETA: $estimatedTime',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppTheme.primaryOrange,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  // Confirm booking method
+  void _confirmBooking() {
+    if (_availableRiders.isEmpty ||
+        _selectedRiderIndex >= _availableRiders.length) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a valid ride option'),
+          backgroundColor: AppTheme.primaryOrange,
+        ),
+      );
+      return;
+    }
+
+    final selectedRider = _availableRiders[_selectedRiderIndex];
+    final String vehicleType =
+        selectedRider['vehicleType'] as String? ?? 'Unknown Vehicle';
+    final String capacity = selectedRider['capacity'] as String? ?? '1 person';
+    final int price = selectedRider['price'] as int? ?? 0;
+    final String estimatedTime =
+        selectedRider['estimatedTime'] as String? ?? '0 min';
+    final String distance = selectedRider['distance'] as String? ?? '0 km';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppTheme.primaryWhite,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text(
+            'Confirm Booking',
+            style: TextStyle(
+              color: AppTheme.primaryBlack,
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryOrange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.primaryOrange.withOpacity(0.2),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Vehicle: $vehicleType',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.primaryBlack,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Capacity: $capacity',
+                      style: TextStyle(color: Colors.grey[700], fontSize: 14),
+                    ),
+                    Text(
+                      'Price: ₹$price',
+                      style: const TextStyle(
+                        color: AppTheme.primaryOrange,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      'ETA: $estimatedTime',
+                      style: TextStyle(color: Colors.grey[700], fontSize: 14),
+                    ),
+                    Text(
+                      'Distance: $distance',
+                      style: TextStyle(color: Colors.grey[700], fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Are you sure you want to book this ride? A driver will be assigned and will arrive at your pickup location.',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                gradient: AppTheme.primaryGradient,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryOrange.withOpacity(0.3),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _navigateToRiderMatching();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'Confirm',
+                  style: TextStyle(
+                    color: AppTheme.primaryWhite,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Navigate to rider matching screen
+  void _navigateToRiderMatching() {
+    final selectedRider = _availableRiders[_selectedRiderIndex];
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            RiderMatchingScreen(
+              selectedVehicle: selectedRider,
+              pickupLocation: _pickupController.text,
+              destination: _destinationController.text,
+            ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          const curve = Curves.easeInOutCubic;
+
+          var tween = Tween(
+            begin: begin,
+            end: end,
+          ).chain(CurveTween(curve: curve));
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
       ),
     );
   }
