@@ -5,6 +5,7 @@ import '../profile/profile_screen.dart';
 import '../ride/ride_booking_screen.dart';
 import '../activities/activities_screen.dart';
 import '../notifications/notifications_screen.dart';
+import '../food/restaurant_search_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -188,7 +189,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             icon: Icons.restaurant,
                             label: 'Food',
                             onTap: () {
-                              // Handle food tap
+                              Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                  pageBuilder:
+                                      (
+                                        context,
+                                        animation,
+                                        secondaryAnimation,
+                                      ) => const RestaurantSearchScreen(),
+                                  transitionsBuilder:
+                                      (
+                                        context,
+                                        animation,
+                                        secondaryAnimation,
+                                        child,
+                                      ) {
+                                        return SlideTransition(
+                                          position:
+                                              Tween<Offset>(
+                                                begin: const Offset(1.0, 0.0),
+                                                end: Offset.zero,
+                                              ).animate(
+                                                CurvedAnimation(
+                                                  parent: animation,
+                                                  curve: Curves.easeInOutCubic,
+                                                ),
+                                              ),
+                                          child: child,
+                                        );
+                                      },
+                                  transitionDuration: const Duration(
+                                    milliseconds: 300,
+                                  ),
+                                ),
+                              );
                             },
                           ),
                         ),

@@ -16,6 +16,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     with TickerProviderStateMixin {
   late AnimationController _parallaxController;
   late AnimationController _floatingController;
+  final SwiperController _swiperController = SwiperController();
   int currentIndex = 0;
 
   final List<OnboardingData> onboardingData = [
@@ -115,6 +116,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   // 3D Card Swiper
                   Expanded(
                     child: Swiper(
+                      controller: _swiperController,
                       itemBuilder: (context, index) {
                         return _build3DCard(onboardingData[index], index);
                       },
@@ -451,7 +453,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             if (currentIndex == onboardingData.length - 1) {
               _navigateToAuth();
             } else {
-              // Move to next page - this would need swiper controller
+              _swiperController.next();
             }
           },
           style: ElevatedButton.styleFrom(
